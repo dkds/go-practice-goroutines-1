@@ -14,24 +14,17 @@ func slowGreet(phrase string, doneChannel chan bool) {
 	time.Sleep(3 * time.Second) // simulate a slow, long-taking task
 	fmt.Println("Hello!", phrase)
 	doneChannel <- true
+	close(doneChannel)
 }
 
 func main() {
-	doneChannels := make([]chan bool, 4)
+	done := make(chan bool)
+	go greet("Nice to meet you!", done)
+	go greet("How are you?", done)
+	go slowGreet("How ... are ... you ...?", done)
 
-	doneChannels[0] = make(chan bool)
-	go greet("Nice to meet you!", doneChannels[0])
+	go greet("I hope you're liking the course!", done)
 
-	doneChannels[1] = make(chan bool)
-	go greet("How are you?", doneChannels[1])
-
-	doneChannels[2] = make(chan bool)
-	go slowGreet("How ... are ... you ...?", doneChannels[2])
-
-	doneChannels[3] = make(chan bool)
-	go greet("I hope you're liking the course!", doneChannels[3])
-
-	for _, done := range doneChannels {
-		<-done
+	for range done {
 	}
 }
